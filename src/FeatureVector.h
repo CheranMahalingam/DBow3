@@ -11,6 +11,7 @@
 #define __D_T_FEATURE_VECTOR__
 
 #include "BowVector.h"
+#include <iostream>
 #include <map>
 #include <vector>
 #include "exports.h"

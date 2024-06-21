@@ -10,7 +10,10 @@
 #ifndef __D_T_BOW_VECTOR__
 #define __D_T_BOW_VECTOR__
 
+#include <cstdint>
+#include <iostream>
 #include <map>
+#include <string>
 #include <vector>
 #include "exports.h"
 #if _WIN32
