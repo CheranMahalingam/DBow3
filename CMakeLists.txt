@@ -1,11 +1,12 @@
 # ----------------------------------------------------------------------------
 #   Basic Configuration
 # ----------------------------------------------------------------------------
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+cmake_minimum_required(VERSION 3.20)
+project(DBoW3)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-PROJECT(DBoW3)
 set(PROJECT_VERSION "0.0.1")
 string(REGEX MATCHALL "[0-9]" PROJECT_VERSION_PARTS "${PROJECT_VERSION}")
 list(GET PROJECT_VERSION_PARTS 0 PROJECT_VERSION_MAJOR)
@@ -18,64 +19,36 @@ message("LIB_INSTALL_DIR: ${LIB_INSTALL_DIR}")
 #------------------------------------------------------
 # Build type
 #------------------------------------------------------
-
 IF(NOT CMAKE_BUILD_TYPE )
-   SET( CMAKE_BUILD_TYPE "Release" )
+  set( CMAKE_BUILD_TYPE "Release" )
 ENDIF()
 
 #------------------------------------------------------
 # Lib Names and Dirs
 #------------------------------------------------------
-
 if(WIN32)
-    # Postfix of DLLs:
-    SET(PROJECT_DLLVERSION "${PROJECT_VERSION_MAJOR}${PROJECT_VERSION_MINOR}${PROJECT_VERSION_PATCH}")
-    SET(RUNTIME_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin CACHE PATH "Directory for dlls and binaries")
-    SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin CACHE PATH "Directory for binaries")
-    SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin CACHE PATH "Directory for dlls")
+  # Postfix of DLLs:
+  set(PROJECT_DLLVERSION "${PROJECT_VERSION_MAJOR}${PROJECT_VERSION_MINOR}${PROJECT_VERSION_PATCH}")
+  set(RUNTIME_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin CACHE PATH "Directory for dlls and binaries")
+  set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin CACHE PATH "Directory for binaries")
+  set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin CACHE PATH "Directory for dlls")
 else()
-    # Postfix of so's:
-    set(PROJECT_DLLVERSION)
-    set(LIB_INSTALL_DIR lib CACHE STRING "Install location of libraries (e.g. lib32 or lib64 for multilib installations)")
-    SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR}/cmake/ /usr/${LIB_INSTALL_DIR}/cmake )
+  # Postfix of so's:
+  set(PROJECT_DLLVERSION)
+  set(LIB_INSTALL_DIR lib CACHE STRING "Install location of libraries (e.g. lib32 or lib64 for multilib installations)")
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR}/cmake/ /usr/${LIB_INSTALL_DIR}/cmake )
 endif()
 
-
-
-#
-OPTION(BUILD_UTILS	"Set to OFF to not build utils" ON)
-OPTION(USE_CONTRIB 	"Set to ON if contrib are installed" OFF)
 OPTION(BUILD_SHARED_LIBS 	"Set to OFF to build static libraries" ON)
 
 # ----------------------------------------------------------------------------
 #   Find Dependencies
 # ----------------------------------------------------------------------------
 find_package(OpenCV  REQUIRED)
-IF(USE_CONTRIB)
-add_definitions(-DUSE_CONTRIB)
-ENDIF()
-if(NOT OpenCV_VERSION VERSION_LESS "3.0")
-    ADD_DEFINITIONS(-DOPENCV_VERSION_3)
-    SET(OPENCV_VERSION_3 ON)
-ELSE()
-    SET(OPENCV_VERSION_3 OFF)
-ENDIF()
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS})
-
-# ----------------------------------------------------------------------------
-#   PROJECT CONFIGURATION
-#   force some variables that could be defined in the command line to be written to cache
-# ----------------------------------------------------------------------------
-OPTION(INSTALL_DOC 	"Set to ON to build/install Documentation" OFF)
-IF (INSTALL_DOC)
-    FIND_PACKAGE(Doxygen REQUIRED)
-    MESSAGE( STATUS "INSTALL_DOC:         ${INSTALL_DOC} ")
-    INCLUDE("${PROJECT_SOURCE_DIR}/generateDoc.cmake")
-    GENERATE_DOCUMENTATION(${PROJECT_SOURCE_DIR}/dox.in)
-ENDIF()
+set(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS})
  
 # ----------------------------------------------------------------------------
 #   Uninstall target, for "make uninstall"
@@ -86,14 +59,10 @@ ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/c
 # ----------------------------------------------------------------------------
 # create configuration file from .in file (If you use windows take care with paths)
 # ----------------------------------------------------------------------------
-
 CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/config.cmake.in" "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake")
 CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/config.cmake.in" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake")
 INSTALL(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION ${LIB_INSTALL_DIR}/cmake/ )
 INSTALL(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" DESTINATION ${LIB_INSTALL_DIR}/cmake/${PROJECT_NAME} )
-
-
-
 
 # ----------------------------------------------------------------------------
 #   Program Optimization and debug (Extracted from OpenCV)
@@ -189,43 +158,34 @@ IF(CMAKE_COMPILER_IS_GNUCXX OR MINGW)
         endif()
     endif()
 
-
     set(EXTRA_C_FLAGS_RELEASE "${EXTRA_C_FLAGS_RELEASE} -DNDEBUG   ")
     set(EXTRA_C_FLAGS_DEBUG "-g3 -O0 -DDEBUG -D_DEBUG -W -Wextra -Wno-return-type   ")
 
-    MESSAGE( STATUS "-------------------------------------------------------------------------------" )
+    message( STATUS "-------------------------------------------------------------------------------" )
     message( STATUS "GNU COMPILER")
-    MESSAGE( STATUS "-------------------------------------------------------------------------------" )
-
-
-
-
+    message( STATUS "-------------------------------------------------------------------------------" )
 ELSE()  # MSVC
 
 
 ENDIF()#END OF COMPILER SPECIFIC OPTIONS
-SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} ${EXTRA_C_FLAGS_RELEASE}")
-SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS}  ${EXTRA_C_FLAGS_DEBUG}")
-SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -std=c++11")
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -std=c++11")
+
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} ${EXTRA_C_FLAGS_RELEASE}")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS}  ${EXTRA_C_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -std=c++20")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -std=c++20")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS_DEBUG}")
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${EXTRA_EXE_LINKER_FLAGS}")
-SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} ${EXTRA_EXE_LINKER_FLAGS_RELEASE}")
-SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} ${EXTRA_EXE_LINKER_FLAGS_DEBUG}")
-
-
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${EXTRA_EXE_LINKER_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} ${EXTRA_EXE_LINKER_FLAGS_RELEASE}")
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} ${EXTRA_EXE_LINKER_FLAGS_DEBUG}")
 
 #------------------------------------------------
 # DIRS
 #------------------------------------------------
-ADD_SUBDIRECTORY(src)
-IF (BUILD_UTILS)
-ADD_SUBDIRECTORY(utils)
-ENDIF()
+add_subdirectory(src)
 
 IF (BUILD_TESTS)
-ADD_SUBDIRECTORY(tests)
+  add_subdirectory(tests)
 ENDIF()
 
 
@@ -233,9 +193,9 @@ ENDIF()
 # display status message for important variables
 # ----------------------------------------------------------------------------
 message( STATUS )
-MESSAGE( STATUS "-------------------------------------------------------------------------------" )
+message( STATUS "-------------------------------------------------------------------------------" )
 message( STATUS "General configuration for ${PROJECT_NAME} ${PROJECT_VERSION}")
-MESSAGE( STATUS "-------------------------------------------------------------------------------" )
+message( STATUS "-------------------------------------------------------------------------------" )
 message("    Built as dynamic libs?:" ${BUILD_SHARED_LIBS})
 message("    Compiler:"                   "${CMAKE_COMPILER}"   "${CMAKE_CXX_COMPILER}")
 
@@ -247,22 +207,19 @@ message( STATUS "C++ flags (Relase+Debug):         ${CMAKE_CXX_FLAGS_RELWITHDEBI
 message( STATUS "CMAKE_CXX_FLAGS:         ${CMAKE_CXX_FLAGS}")
 message( STATUS "CMAKE_BINARY_DIR:         ${CMAKE_BINARY_DIR}")
 
-MESSAGE( STATUS )
-MESSAGE( STATUS "CMAKE_SYSTEM_PROCESSOR = ${CMAKE_SYSTEM_PROCESSOR}" )
-MESSAGE( STATUS "CMAKE_INSTALL_PREFIX = ${CMAKE_INSTALL_PREFIX}" )
-MESSAGE( STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}" )
-MESSAGE( STATUS "CMAKE_MODULE_PATH = ${CMAKE_MODULE_PATH}" )
-MESSAGE( STATUS "BUILD_UTILS= ${BUILD_UTILS}" )
-MESSAGE( STATUS "BUILD_TESTS= ${BUILD_TESTS}" )
-MESSAGE( STATUS "OPENCV_DIR= ${OpenCV_DIR} VERSION=${OpenCV_VERSION}" )
+message( STATUS )
+message( STATUS "CMAKE_SYSTEM_PROCESSOR = ${CMAKE_SYSTEM_PROCESSOR}" )
+message( STATUS "CMAKE_INSTALL_PREFIX = ${CMAKE_INSTALL_PREFIX}" )
+message( STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}" )
+message( STATUS "CMAKE_MODULE_PATH = ${CMAKE_MODULE_PATH}" )
+message( STATUS "BUILD_TESTS= ${BUILD_TESTS}" )
+message( STATUS "OPENCV_DIR= ${OpenCV_DIR} VERSION=${OpenCV_VERSION}" )
 
-MESSAGE( STATUS "USE_CONTRIB= ${USE_CONTRIB}" )
+message( STATUS )
+message( STATUS "OpenCV_LIB_DIR=${OpenCV_LIB_DIR}")
+message( STATUS "CMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}")
 
-MESSAGE( STATUS )
-MESSAGE( STATUS "OpenCV_LIB_DIR=${OpenCV_LIB_DIR}")
-MESSAGE( STATUS "CMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}")
-
-MESSAGE( STATUS )
-MESSAGE( STATUS )
-MESSAGE( STATUS "Change a value with: cmake -D<Variable>=<Value>" )
-MESSAGE( STATUS )
+message( STATUS )
+message( STATUS )
+message( STATUS "Change a value with: cmake -D<Variable>=<Value>" )
+message( STATUS )
